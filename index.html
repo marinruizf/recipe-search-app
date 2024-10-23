@@ -68,13 +68,14 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             padding: 20px;
             margin-bottom: 20px;
-            display: flex;
-            flex-wrap: wrap;
         }
         .recipe h2 {
             color: #2c3e50;
             margin-top: 0;
-            width: 100%;
+        }
+        .recipe-content {
+            display: flex;
+            flex-wrap: wrap;
         }
         .recipe-image-container {
             flex: 0 0 300px;
@@ -84,21 +85,31 @@
             max-width: 100%;
             border-radius: 4px;
         }
-        .recipe-content {
+        .recipe-details {
             flex: 1;
             min-width: 300px;
-            display: flex;
-            flex-direction: column;
         }
         .calories {
-            font-weight: bold;
-            margin: 10px 0;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        .calories p {
+            margin: 5px 0;
+        }
+        .calories small {
+            color: #666;
+            font-style: italic;
         }
         .ingredients {
             margin-top: 15px;
-            flex-grow: 1;
         }
-        .view-recipe {
+        .calorie-note {
+            font-style: italic;
+            color: #666;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+        .view-full-recipe {
             display: inline-block;
             padding: 10px 15px;
             background-color: #2ecc71;
@@ -106,10 +117,9 @@
             text-decoration: none;
             border-radius: 4px;
             transition: background-color 0.3s;
-            align-self: flex-start;
             margin-top: 15px;
         }
-        .view-recipe:hover {
+        .view-full-recipe:hover {
             background-color: #27ae60;
         }
         mark {
@@ -140,12 +150,11 @@
                 width: 50%;
             }
             .recipe-image-container {
-                flex: 0 0 100%;
                 margin-right: 0;
                 margin-bottom: 20px;
             }
             .recipe-content {
-                flex: 0 0 100%;
+                flex-direction: column;
             }
         }
     </style>
@@ -227,26 +236,37 @@
 
             recipes.forEach(hit => {
                 const recipe = hit.recipe;
-                const recipeDiv = document.createElement('div');
-                recipeDiv.className = 'recipe';
-                
+                const servings = recipe.yield || 4; // Default to 4 if yield is not provided
+                const totalCalories = Math.round(recipe.calories);
+                const estimatedCaloriesPerServing = Math.round(totalCalories / servings);
+
                 const highlightedTitle = highlightText(recipe.label);
                 const highlightedIngredients = recipe.ingredientLines.map(ingredient => highlightText(ingredient));
 
+                const recipeDiv = document.createElement('div');
+                recipeDiv.className = 'recipe';
+                
                 recipeDiv.innerHTML = `
                     <h2>${highlightedTitle}</h2>
-                    <div class="recipe-image-container">
-                        <img src="${recipe.image}" alt="${recipe.label}" class="recipe-image">
-                    </div>
                     <div class="recipe-content">
-                        <div class="calories">Calories: ${Math.round(recipe.calories)}</div>
-                        <div class="ingredients">
-                            <h3>Ingredients:</h3>
-                            <ul>
-                                ${highlightedIngredients.map(ingredient => `<li>${ingredient}</li>`).join('')}
-                            </ul>
+                        <div class="recipe-image-container">
+                            <img src="${recipe.image}" alt="${recipe.label}" class="recipe-image">
                         </div>
-                        <a href="${recipe.url}" target="_blank" class="view-recipe">View Full Recipe</a>
+                        <div class="recipe-details">
+                            <div class="calories">
+                                <p>Total Calories: ${totalCalories}</p>
+                                <p>Estimated Calories per Serving: ${estimatedCaloriesPerServing}</p>
+                                <small>(Recipe makes approximately ${servings} servings)</small>
+                            </div>
+                            <div class="ingredients">
+                                <h3>Ingredients:</h3>
+                                <ul>
+                                    ${highlightedIngredients.map(ingredient => `<li>${ingredient}</li>`).join('')}
+                                </ul>
+                            </div>
+                            <p class="calorie-note"><small>Note: Calorie counts are estimates and may vary based on specific ingredients and preparation methods.</small></p>
+                            <a href="${recipe.url}" target="_blank" class="view-full-recipe">View Full Recipe</a>
+                        </div>
                     </div>
                 `;
                 resultsDiv.appendChild(recipeDiv);
